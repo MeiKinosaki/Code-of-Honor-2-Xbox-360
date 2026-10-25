@@ -1,0 +1,42 @@
+name: Repository baseline audit
+
+on:
+  push:
+    paths:
+      - "README.md"
+      - "docs/**"
+      - ".github/workflows/repository-audit.yml"
+  pull_request:
+    paths:
+      - "README.md"
+      - "docs/**"
+      - ".github/workflows/repository-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  documentation-audit:
+    name: Check planning and evidence documents
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify required documents
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s README.md
+          test -s docs/PORTING_PLAN.md
+          test -s docs/DEPENDENCY_AUDIT.md
+          grep -q "M0" docs/PORTING_PLAN.md
+          grep -q "default.xex" docs/PORTING_PLAN.md
+          grep -q "Unknown" docs/DEPENDENCY_AUDIT.md
+          echo "Documentation baseline checks passed."
+
+      - name: State scope clearly
+        run: |
+          echo "This workflow checks documentation only."
+          echo "It does not compile the game or validate Xbox 360 runtime behavior."
